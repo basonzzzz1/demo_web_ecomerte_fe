@@ -1,0 +1,23 @@
+.icon-hover:hover {
+    border-color: #3b71ca !important;
+    background-color: white !important;
+}
+
+.icon-hover:hover i {
+    color: #3b71ca !important;
+}
+
+.fas {
+    color: darkblue;
+<<<<<<< HEAD
+=======
+}
+
+.card-text {
+    font-weight: 800;
+    color: red;
+}
+a{
+
+>>>>>>> ae05121c9b502d9cc39884a7d844c3ca364f813e
+}

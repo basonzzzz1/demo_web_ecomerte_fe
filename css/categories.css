@@ -1,0 +1,7 @@
+.categoryList li{
+    border-bottom: 1px solid #00000036;
+    margin-bottom: 8px;
+}
+.categoryList li:hover{
+    background-color: #E9ECEF;
+}

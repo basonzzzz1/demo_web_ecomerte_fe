@@ -93,9 +93,9 @@ function show(p) {
             
                                 <dt class="col-3">Số lượng</dt>
                                 <dd class="col-9">${p.quantity}</dd>
-            
-                                <dt class="col-3">Shop</dt>
-                                <dd class="col-9">${p.shop.name}</dd>
+                
+                                <dt class="col-3 shop-link">Shop</dt>
+                                <b class="col-9 shop-link" style="text-decoration: none; color: black" >${p.shop.name}</b>
                             </div>
             
                             <hr/>
@@ -130,12 +130,14 @@ function show(p) {
                             <a href="#" class="btn btn-warning shadow-0"> Buy now </a>
                             <a href="#" class="btn btn-primary shadow-0"> <i class="me-1 fa fa-shopping-basket"></i> Add to cart
                             </a>
-                            <a href="#" class="btn btn-light border border-secondary py-2 icon-hover px-3"> <i
-                                class="me-1 fa fa-heart fa-lg"></i> Save </a>
+                         <button onclick="getListChat(${p.shop.account.id})" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#chatModal">
+                          Chat Shop
+                         </button>
                         </div>
                     </main>
                 </div>
             </div>
+
 <div class="container">
         <div class="comments-section" id="comments-section">
         </div>
@@ -223,6 +225,114 @@ function calculateTimePosted(createdAt) {
     const postedTime = new Date(createdAt);
     const timeDiff = currentTime - postedTime;
 
+    if (timeDiff < 60000) {
+        return Math.floor(timeDiff / 1000) + " giây trước";
+    } else if (timeDiff < 3600000) {
+        return Math.floor(timeDiff / 60000) + " phút trước";
+    } else if (timeDiff < 86400000) {
+        return Math.floor(timeDiff / 3600000) + " giờ trước";
+    } else if (timeDiff < 2592000000) {
+        return Math.floor(timeDiff / 86400000) + " ngày trước";
+    } else if (timeDiff < 31536000000) {
+        return Math.floor(timeDiff / 2592000000) + " tháng trước";
+    } else {
+        return Math.floor(timeDiff / 31536000000) + " năm trước";
+    }
+}
+function showChatMessages(messages) {
+    let chatList = document.getElementById("chatList");
+    chatList.innerHTML = ""; // Xóa nội dung cũ
+
+    messages.forEach(function (message) {
+        let li = document.createElement("li");
+        li.textContent = message.content;
+        chatList.appendChild(li);
+    });
+}
+function getListChat(idAccount2) {
+    setIdAccount2(idAccount2)
+    $.ajax({
+        type: "GET",
+        headers: {
+            'Accept': 'application/json',
+            "Authorization": "Bearer " + localStorage.getItem('token'),
+        },
+        url: `http://localhost:8080/chat/detail/${localStorage.getItem('idAccount')}/${idAccount2}`,
+        success: function (data) {
+            showListChat(data)
+            scrollToBottom();
+            console.log(data)
+        },
+        error: function (err) {
+            console.log(err)
+        }
+    });
+}
+getListChat()
+function setIdAccount2(idAccount2) {
+    localStorage.removeItem("idAccount2");
+    localStorage.setItem("idAccount2" , idAccount2);
+}
+function showListChat(arr) {
+    let str = "";
+    for (const c of arr) {
+        const chatTime = calculateTimeChat(c.createdAt);
+        if(c.account1.id == localStorage.getItem('idAccount')){
+            str += `
+           <div style="float: right ; display: flex ">
+            <div style="width: 350px">
+            <div style="float: right ; background-color: #1877f2 ; color: white ;margin-right: 5px; margin-top: 10px ; border-radius: 10px ; padding: 5px ; text-align: center ; display: flex">
+            <h6 style="text-align: right ; margin-top: 5px ; margin-left: 5px ; margin-right: 5px">${c.content}</h6>
+             </div>
+             </div>
+             <div style="width: 35px ; margin-top: 10px">
+              <img src="${c.account1.image}" alt="" style="width: 35px ; height: 35px ; border-radius: 50%"> 
+            </div>
+           </div>
+        `
+        }else{
+            str += `
+            <div style="float: left ; display: flex">
+            <div style="width: 35px ; margin-top: 10px">
+              <img src="${c.account2.image}" alt="" style="width: 35px ; height: 35px ; border-radius: 50%"> 
+            </div>
+            <div style="width: 350px">
+                        <div style="float: left ; background-color: #e4e6eb ; color: black ;margin-left: 5px; margin-top: 10px ; border-radius: 10px ; padding: 5px ; text-align: center ; display: flex">
+                <h6 style="text-align: left ; margin-top: 5px ; margin-left: 5px ; margin-right: 5px">${c.content}</h6>
+             </div>
+            </div>
+
+            </div>
+        `
+        }
+    }
+    document.getElementById("chatList").innerHTML = str;
+}
+function sendMessage() {
+    let content = document.getElementById("newMessage").value;
+    let chat = {content,account1: {id: localStorage.getItem('idAccount')},account2: {id: localStorage.getItem("idAccount2")}};
+    $.ajax({
+        type: "POST",
+        headers: {
+            'Accept': 'application/json',
+            "Authorization": "Bearer " + localStorage.getItem('token'),
+        },
+        url: "http://localhost:8080/chat",
+        data: JSON.stringify(chat),
+        contentType: "application/json",
+        success: function (data) {
+            appendMessageToChatList(data);
+            document.getElementById("newMessage").value = "";
+        },
+        error: function (err) {
+            console.log(err);
+        }
+    });
+}
+function calculateTimeChat(createdAt) {
+    const currentTime = new Date();
+    const postedTime = new Date(createdAt);
+    const timeDiff = currentTime - postedTime;
     if (timeDiff < 60000) {
         return Math.floor(timeDiff / 1000) + " giây trước";
     } else if (timeDiff < 3600000) {
